@@ -42,7 +42,7 @@ Conventions:
 Before picking visual direction (colors, fonts, mockup treatment, layout), \
 ASK THE USER what they want — don't assume defaults.
 
-Read the full guide via the resource at screenshots://workflow-guide or the \
+Read the full guide via the resource at screenshot-maker://workflow-guide or the \
 \`get_workflow_guide\` tool.`;
 
 /**
@@ -72,4 +72,4 @@ export function getWorkflowGuide(): string {
   return cached;
 }
 
-export const WORKFLOW_GUIDE_URI = "screenshots://workflow-guide";
+export const WORKFLOW_GUIDE_URI = "screenshot-maker://workflow-guide";

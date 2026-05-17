@@ -53,9 +53,9 @@ describe("MCP server", () => {
   it("exposes the workflow guide as a resource any client can fetch", async () => {
     const { client } = await pair(root);
     const list = await client.listResources();
-    const guide = list.resources.find((r) => r.uri === "screenshots://workflow-guide");
+    const guide = list.resources.find((r) => r.uri === "screenshot-maker://workflow-guide");
     expect(guide).toBeDefined();
-    const res = await client.readResource({ uri: "screenshots://workflow-guide" });
+    const res = await client.readResource({ uri: "screenshot-maker://workflow-guide" });
     const text = (res.contents[0] as { text: string }).text;
     expect(text.length).toBeGreaterThan(500);
     expect(text).toMatch(/Standard workflow|Conventions/i);

@@ -41,7 +41,7 @@ at this package's compiled entry, and set `cwd` to your screenshots project.
 ### Claude Code
 
 ```bash
-claude mcp add screenshots \
+claude mcp add screenshot-maker \
   --cwd /path/to/my-app-screenshots \
   node /path/to/app-store-screenshot-maker/dist/index.js
 ```
@@ -52,7 +52,7 @@ claude mcp add screenshots \
 ```json
 {
   "mcpServers": {
-    "screenshots": {
+    "screenshot-maker": {
       "command": "node",
       "args": ["/path/to/app-store-screenshot-maker/dist/index.js"],
       "cwd": "/path/to/my-app-screenshots"
@@ -60,6 +60,10 @@ claude mcp add screenshots \
   }
 }
 ```
+
+The alias (`screenshot-maker` here) is yours to pick — pick something
+descriptive. Many users want one entry per app (`screenshot-maker-keep`,
+`screenshot-maker-otherapp`), each with its own `cwd`.
 
 ### Working in folder A, screenshots in folder B
 
@@ -90,7 +94,7 @@ So any agent on any MCP client knows the workflow:
 1. **`instructions`** on the server (MCP `InitializeResult`). A condensed
    workflow guide that compliant clients inject into the agent's system
    prompt automatically. No effort on the user's part.
-2. **MCP resource** at `screenshots://workflow-guide` — clients that support
+2. **MCP resource** at `screenshot-maker://workflow-guide` — clients that support
    `resources/list` and `resources/read` expose this to the agent.
 3. **`get_workflow_guide` tool** — universal fallback. Any client that can
    list tools can let the agent fetch the full guide.
