@@ -29,7 +29,7 @@ describe("MCP server", () => {
     await rmDir(root);
   });
 
-  it("lists all 10 tools", async () => {
+  it("lists all 11 tools", async () => {
     const { client } = await pair(root);
     const res = await client.listTools();
     const names = res.tools.map((t) => t.name).sort();
@@ -37,6 +37,7 @@ describe("MCP server", () => {
       [
         "capture_preview",
         "delete_screenshot_canvas",
+        "get_workflow_guide",
         "init_project",
         "list_screenshot_canvases",
         "list_source_assets",
@@ -47,6 +48,38 @@ describe("MCP server", () => {
         "upsert_screenshot_canvas",
       ],
     );
+  });
+
+  it("exposes the workflow guide as a resource any client can fetch", async () => {
+    const { client } = await pair(root);
+    const list = await client.listResources();
+    const guide = list.resources.find((r) => r.uri === "screenshots://workflow-guide");
+    expect(guide).toBeDefined();
+    const res = await client.readResource({ uri: "screenshots://workflow-guide" });
+    const text = (res.contents[0] as { text: string }).text;
+    expect(text.length).toBeGreaterThan(500);
+    expect(text).toMatch(/Standard workflow|Conventions/i);
+  });
+
+  it("get_workflow_guide returns the same content as the resource", async () => {
+    const { client } = await pair(root);
+    const res = await client.callTool({ name: "get_workflow_guide", arguments: {} });
+    expect(res.isError).toBeFalsy();
+    const content = res.content as Array<{ type: string; text: string }>;
+    expect(content[0]?.text).toMatch(/upsert_screenshot_canvas/);
+    expect(content[0]?.text).toMatch(/{{t\.key}}/);
+  });
+
+  it("advertises server.instructions for clients that surface it", async () => {
+    const { client } = await pair(root);
+    const result = client.getServerVersion();
+    // We can't easily read InitializeResult.instructions back through the SDK
+    // client API, but we can confirm the server initialized with our name.
+    expect(result?.name).toBe("app-store-screenshot-maker");
+    // The instructions string itself is exported and stable; test it directly.
+    const { SERVER_INSTRUCTIONS } = await import("../src/mcp/instructions.js");
+    expect(SERVER_INSTRUCTIONS).toMatch(/Standard workflow/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/get_workflow_guide/);
   });
 
   it("init_project creates project files when called via MCP", async () => {
