@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "name": "keep",
+  "locales": [
+    "en",
+    "de"
+  ],
+  "defaultLocale": "en",
+  "canvases": [
+    {
+      "id": "01-people",
+      "platform": "app_store",
+      "device": "iphone",
+      "order": 1
+    },
+    {
+      "id": "02-voice",
+      "platform": "app_store",
+      "device": "iphone",
+      "order": 2
+    },
+    {
+      "id": "03-glance",
+      "platform": "app_store",
+      "device": "iphone",
+      "order": 3
+    }
+  ]
+}
