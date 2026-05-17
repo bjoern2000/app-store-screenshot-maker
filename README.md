@@ -20,12 +20,6 @@ terminal — your MCP client (Claude Code, Cursor, Cline, Continue, Goose, …)
 spawns it as a subprocess when an agent session starts and shuts it down when
 the session ends.
 
-Two things matter for where screenshots end up:
-
-1. The **MCP server's working directory** (`cwd`) IS the screenshot project.
-   That's where `manifest.json`, `canvases/`, `assets/`, and `output/` live.
-2. The **agent's session directory** can be anywhere else. They're independent.
-
 The UI auto-opens at `http://127.0.0.1:4747` for the lifetime of the server.
 
 Environment overrides (set them in your MCP client's server config):
@@ -35,57 +29,59 @@ Environment overrides (set them in your MCP client's server config):
 
 ## Wiring it into your MCP client
 
-The pattern is the same in every client: configure a stdio server, point it
-at this package's compiled entry, and set `cwd` to your screenshots project.
+**One global entry, any project.** The server figures out which project to
+operate on per session:
 
-### Claude Code
+1. At startup it walks up from the spawn directory looking for a
+   `manifest.json` and uses that as the active project.
+2. Otherwise it defaults to the spawn directory and waits for
+   `init_project` or `set_active_project`.
+
+So you only need one MCP entry. No `cwd`. No per-project config.
+
+### Claude Code (recommended)
 
 ```bash
-claude mcp add screenshot-maker \
-  --cwd /path/to/my-app-screenshots \
+claude mcp add screenshot-maker --scope user \
   node /path/to/app-store-screenshot-maker/dist/index.js
 ```
 
-…or edit `~/.claude/settings.json` (user scope) / `<repo>/.claude/settings.json`
-(project scope) directly:
+…or edit `~/.claude/settings.json` directly:
 
 ```json
 {
   "mcpServers": {
     "screenshot-maker": {
       "command": "node",
-      "args": ["/path/to/app-store-screenshot-maker/dist/index.js"],
-      "cwd": "/path/to/my-app-screenshots"
+      "args": ["/path/to/app-store-screenshot-maker/dist/index.js"]
     }
   }
 }
 ```
 
-The alias (`screenshot-maker` here) is yours to pick — pick something
-descriptive. Many users want one entry per app (`screenshot-maker-keep`,
-`screenshot-maker-otherapp`), each with its own `cwd`.
+### Daily flow with N apps in N folders
 
-### Working in folder A, screenshots in folder B
+Once the entry above is in place, you have a few equivalent ways to drive it:
 
-This is the common case — you're coding your app in `~/code/myapp/` but want
-the screenshots project to live in `~/screenshots/myapp/`. Set the MCP
-server's `cwd` to the screenshots folder; your Claude Code session stays in
-the app folder. The two are decoupled.
+- **`cd` into a project, launch Claude Code** — the server walks up from the
+  spawn dir, finds the existing `manifest.json`, picks it as the active
+  project.
+- **Stay anywhere and tell the agent** — "set the active screenshot project
+  to `~/code/keep/screenshots`". The agent calls `set_active_project`; the
+  UI repoints automatically.
+- **New project** — "init a screenshot project at `./store-assets`". The
+  agent calls `init_project({root: './store-assets'})`; the new dir becomes
+  active.
 
-```
-~/code/myapp/                ← Claude Code session opens here
-~/screenshots/myapp/         ← MCP server cwd; canvases, assets, output live here
-  manifest.json
-  canvases/
-  assets/
-  output/
-```
+Switching projects mid-session is fine. The UI's project-root indicator
+updates and the file watcher repoints.
 
 ### Cursor / Cline / Continue / Goose / generic MCP clients
 
-Same config shape, different file. Look for an `mcpServers` block in your
-client's settings; provide `command`, `args`, and `cwd`. The server speaks
-standard MCP over stdio, no Claude-specific glue.
+Same shape, different settings file. Look for an `mcpServers` block in your
+client's settings; provide `command` and `args`. Optional `cwd` if you want
+the auto-discover to start somewhere specific. The server speaks standard
+MCP over stdio — no Claude-specific glue.
 
 ## Agent guidance — three layers
 
@@ -120,7 +116,8 @@ my-app-screenshots/
 
 | Tool | What it does |
 | --- | --- |
-| `init_project` | Create the folder layout. Idempotent. Call first. |
+| `init_project` | Create the folder layout for a new project. Idempotent. The new dir becomes the active project. |
+| `set_active_project` | Switch the active project to another initialized dir. Mid-session is fine. |
 | `set_project_name` | Set the slug prefixed onto every export filename. |
 | `set_stylesheet` | Replace `styles.css` (full file; no partial updates). |
 | `upsert_screenshot_canvas` | Create/update one canvas: id, platform, device, order, HTML, per-locale strings. |
@@ -130,6 +127,7 @@ my-app-screenshots/
 | `capture_preview` | Render one canvas at one locale; return PNG inline for agent self-QA. |
 | `list_source_assets` | Recursively list `assets/` so the agent knows what to reference. |
 | `render_all` | Render every (canvas × locale) to `output/`. Final export step. |
+| `get_workflow_guide` | Returns the full workflow guide (universal fallback for clients without skills/resources). |
 
 ## Templating
 

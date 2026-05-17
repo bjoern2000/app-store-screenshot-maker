@@ -32,25 +32,54 @@ project/
 
 You **edit** the project; the **user reviews** in the live web UI.
 
+## Active project model
+
+The server has ONE active project root at a time. On startup it walks up from
+the spawn directory looking for a `manifest.json`; if found, that's active.
+Otherwise the spawn dir is active and waiting for `init_project`.
+
+You can switch projects mid-session without restarting:
+
+- **`init_project({root: './path'})`** — create a new project. The new dir becomes active.
+- **`set_active_project({root: '/path/to/existing'})`** — switch to an already-initialized project.
+
+The UI's project-root indicator follows the active root; the file watcher
+repoints automatically.
+
 ## Standard workflow
 
-For a fresh project, in this order:
+At the start of every session:
 
-1. **`list_screenshot_canvases`** — see what (if anything) already exists.
-2. **`init_project`** — only if not initialized. Creates the folder layout.
+1. **`list_screenshot_canvases`** — what's the current state? This also tells
+   you implicitly which project is active (via the response). If the response
+   is the empty default manifest, the active root has no project yet.
+
+If there's no project yet:
+
+2. **`init_project`** — pass `root` to put it where the user wants
+   (e.g. `./screenshots`, `~/code/keep/store-assets`). The new dir becomes active.
 3. **`set_project_name`** — short slug (e.g. `keep`); becomes the filename prefix.
 4. **`set_locales`** — declare locales + default (e.g. `['en','de']`, default `en`).
 5. **`list_source_assets`** — see what raw screenshots the user has dropped in.
 6. **`set_stylesheet`** — write the global CSS once. Treat this as your design system.
-7. **`upsert_screenshot_canvas`** × N — one canvas per screenshot slot, each with:
+
+For each screenshot:
+
+7. **`upsert_screenshot_canvas`** with:
    - `id` (kebab-case, e.g. `01-hero`, `02-search`)
    - `platform` (`app_store` | `play_store`)
    - `device` (`iphone` | `android_phone`)
    - `order` (sort index, 0-based)
    - `html` body — references `{{t.key}}` tokens and `<img src='assets/…'>`
    - `strings` — per-locale key→value maps
-8. **`capture_preview`** after each upsert — look at the returned PNG, fix issues.
+8. **`capture_preview`** — look at the returned PNG, fix issues, repeat.
+
+At the end:
+
 9. **`render_all`** — produces every (canvas × locale) PNG in `output/`.
+
+If the user mentions a different project ("switch to my Foo screenshots"),
+call **`set_active_project`** with the path they describe.
 
 ## Conventions you MUST follow
 

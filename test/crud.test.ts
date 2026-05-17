@@ -14,7 +14,7 @@ import {
   handleListSourceAssets,
   type HandlerContext,
 } from "../src/mcp/handlers.js";
-import { makeTempDir, rmDir } from "./helpers.js";
+import { makeTempDir, rmDir, makeState } from "./helpers.js";
 
 function payload(result: { content: Array<{ text: string }>; isError?: boolean }): any {
   expect(result.isError).toBeFalsy();
@@ -28,7 +28,7 @@ describe("Phase 2 handlers", () => {
   beforeEach(async () => {
     root = await makeTempDir("crud");
     await initProject(root);
-    ctx = { cwd: root };
+    ctx = { state: makeState(root) };
   });
 
   afterEach(async () => {

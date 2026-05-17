@@ -9,7 +9,7 @@ import {
   type HandlerContext,
 } from "../src/mcp/handlers.js";
 import { closeBrowser } from "../src/render/browser.js";
-import { makeTempDir, rmDir } from "./helpers.js";
+import { makeTempDir, rmDir, makeState } from "./helpers.js";
 
 let nextPort = 5101;
 function pickPort(): number {
@@ -28,8 +28,9 @@ describe("UI server", () => {
   beforeEach(async () => {
     root = await makeTempDir("ui");
     await initProject(root);
-    ctx = { cwd: root };
-    ui = await startUiServer({ cwd: root, port: pickPort() });
+    const state = makeState(root);
+    ctx = { state };
+    ui = await startUiServer({ state, port: pickPort() });
   });
 
   afterEach(async () => {

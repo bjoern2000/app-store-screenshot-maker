@@ -6,10 +6,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createMcpServer } from "../src/mcp/server.js";
 import { closeBrowser } from "../src/render/browser.js";
-import { makeTempDir, rmDir } from "./helpers.js";
+import { makeTempDir, rmDir, makeState } from "./helpers.js";
 
 async function pair(cwd: string): Promise<{ client: Client; server: McpServer }> {
-  const server = createMcpServer({ cwd });
+  const server = createMcpServer({ state: makeState(cwd) });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test", version: "0" });
   await Promise.all([
@@ -49,7 +49,7 @@ describe("end-to-end agent workflow", () => {
     // The MCP server's cwd is the test runner's cwd, so a re-init at the
     // explicit `root` is what wires us up.
     const serverRooted = await (async () => {
-      const s = createMcpServer({ cwd: root });
+      const s = createMcpServer({ state: makeState(root) });
       const [ct, st] = InMemoryTransport.createLinkedPair();
       const c = new Client({ name: "test", version: "0" });
       await Promise.all([s.connect(st), c.connect(ct)]);

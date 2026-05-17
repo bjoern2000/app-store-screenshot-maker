@@ -3,7 +3,7 @@ import WebSocket from "ws";
 import { startUiServer, type UiServerHandle } from "../src/ui/server.js";
 import { initProject } from "../src/project/init.js";
 import { closeBrowser } from "../src/render/browser.js";
-import { makeTempDir, rmDir } from "./helpers.js";
+import { makeTempDir, rmDir, makeState } from "./helpers.js";
 
 let nextPort = 5301;
 function pickPort(): number {
@@ -46,7 +46,7 @@ describe("WebSocket hot-reload", () => {
     root = await makeTempDir("ws");
     await initProject(root);
     // Disable the FS watcher so we can drive broadcasts deterministically.
-    ui = await startUiServer({ cwd: root, port: pickPort(), watch: false });
+    ui = await startUiServer({ state: makeState(root), port: pickPort(), watch: false });
   });
 
   afterEach(async () => {

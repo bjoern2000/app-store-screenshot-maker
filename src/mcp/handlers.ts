@@ -1,8 +1,9 @@
+import path from "node:path";
 import { z } from "zod";
 import { initProject } from "../project/init.js";
 import { projectPaths, type ProjectPaths } from "../project/paths.js";
 import { readManifest, writeManifest } from "../project/manifest.js";
-import { atomicWrite } from "../project/io.js";
+import { atomicWrite, exists } from "../project/io.js";
 import {
   deleteCanvasHtml,
   removeEntry,
@@ -12,8 +13,10 @@ import {
 import { ensureLocaleFile, mergeLocale } from "../project/locales.js";
 import { listAssets } from "../project/assets.js";
 import { renderCanvas, renderAll } from "../render/renderer.js";
+import type { ProjectState } from "../project/state.js";
 import {
   InitProjectInput,
+  SetActiveProjectInput,
   SetProjectNameInput,
   SetStylesheetInput,
   UpsertCanvasInput,
@@ -26,7 +29,7 @@ import {
 } from "./tools.js";
 
 export interface HandlerContext {
-  cwd: string;
+  state: ProjectState;
 }
 
 export type ContentPart =
@@ -48,10 +51,8 @@ function err(text: string): TextResult {
   return { content: [{ type: "text", text }], isError: true };
 }
 
-const NOT_IMPLEMENTED = (name: string) => err(`${name}: not implemented yet (phase 3).`);
-
 function pathsFor(ctx: HandlerContext): ProjectPaths {
-  return projectPaths(ctx.cwd);
+  return projectPaths(ctx.state.root);
 }
 
 export async function handleInitProject(
@@ -59,14 +60,35 @@ export async function handleInitProject(
   raw: unknown,
 ): Promise<TextResult> {
   const args = InitProjectInput.parse(raw);
-  const root = args.root ?? ctx.cwd;
+  // Resolve relative paths against the currently active root so
+  // `init_project({root:'./screenshots'})` works from anywhere.
+  const root = args.root ? path.resolve(ctx.state.root, args.root) : ctx.state.root;
   const result = await initProject(root);
+  // Calling init_project always makes that project active for the session.
+  ctx.state.setRoot(result.paths.root);
   return ok({
     ok: true,
     root: result.paths.root,
+    active: true,
     created: result.created,
     alreadyExisted: result.alreadyExisted,
   });
+}
+
+export async function handleSetActiveProject(
+  ctx: HandlerContext,
+  raw: unknown,
+): Promise<TextResult> {
+  const args = SetActiveProjectInput.parse(raw);
+  const target = path.resolve(ctx.state.root, args.root);
+  const manifestPath = path.join(target, "manifest.json");
+  if (!(await exists(manifestPath))) {
+    return err(
+      `No manifest at ${manifestPath}. Run init_project({root: '${target}'}) first, or pass an already-initialized path.`,
+    );
+  }
+  ctx.state.setRoot(target);
+  return ok({ ok: true, root: target });
 }
 
 export async function handleSetStylesheet(
@@ -220,6 +242,7 @@ export type ToolHandler = (ctx: HandlerContext, raw: unknown) => Promise<TextRes
 
 export const HANDLERS: Record<string, ToolHandler> = {
   init_project: handleInitProject,
+  set_active_project: handleSetActiveProject,
   set_project_name: handleSetProjectName,
   set_stylesheet: handleSetStylesheet,
   upsert_screenshot_canvas: handleUpsertCanvas,

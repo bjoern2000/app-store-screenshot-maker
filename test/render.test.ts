@@ -13,7 +13,7 @@ import {
   type HandlerContext,
 } from "../src/mcp/handlers.js";
 import { closeBrowser } from "../src/render/browser.js";
-import { makeTempDir, rmDir } from "./helpers.js";
+import { makeTempDir, rmDir, makeState } from "./helpers.js";
 
 /** Read width+height from a PNG buffer (IHDR is at byte 16..). */
 function readPngDimensions(buf: Buffer): { width: number; height: number } {
@@ -40,7 +40,7 @@ describe("rendering pipeline", () => {
   beforeEach(async () => {
     root = await makeTempDir("render");
     await initProject(root);
-    ctx = { cwd: root };
+    ctx = { state: makeState(root) };
   });
 
   afterEach(async () => {

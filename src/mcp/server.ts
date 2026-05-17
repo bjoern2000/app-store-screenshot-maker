@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import {
   InitProjectInput,
+  SetActiveProjectInput,
   SetProjectNameInput,
   SetStylesheetInput,
   UpsertCanvasInput,
@@ -13,6 +14,7 @@ import {
   ListSourceAssetsInput,
   RenderAllInput,
 } from "./tools.js";
+import { ProjectState } from "../project/state.js";
 import { HANDLERS, type HandlerContext, type TextResult, formatZodError } from "./handlers.js";
 import {
   SERVER_INSTRUCTIONS,
@@ -30,8 +32,14 @@ const TOOL_CONFIGS: ToolConfig[] = [
   {
     name: "init_project",
     description:
-      "Initialize the screenshot project in the working directory: create manifest.json, styles.css, and the canvases/, locales/, assets/, output/ folders. Idempotent — safe to call again; nothing is overwritten. Call this FIRST before any other tool. The project dir's basename becomes the default name prefix on exports; override later with set_project_name.",
+      "Initialize a screenshot project: create manifest.json, styles.css, and the canvases/, locales/, assets/, output/ folders. Idempotent — safe to call again; nothing is overwritten. Call this once per new project. Pass `root` (absolute or relative to the active root) to create the project anywhere, e.g. `./screenshots`. The created project automatically becomes the active project for the rest of the session. The dir's basename becomes the default name prefix on exports; override later with set_project_name.",
     schema: InitProjectInput,
+  },
+  {
+    name: "set_active_project",
+    description:
+      "Point the server at an already-initialized project for the rest of the session. The UI and file watcher repoint automatically. Use this to switch between multiple screenshot projects without restarting the MCP server. Pass `root` (absolute or relative). Requires manifest.json to exist at the target.",
+    schema: SetActiveProjectInput,
   },
   {
     name: "set_project_name",
@@ -90,7 +98,8 @@ const TOOL_CONFIGS: ToolConfig[] = [
 ];
 
 export interface CreateMcpOptions {
-  cwd: string;
+  /** Shared project state. Pass the same instance to startUiServer so MCP + UI stay in sync. */
+  state: ProjectState;
 }
 
 export function createMcpServer(opts: CreateMcpOptions): McpServer {
@@ -141,7 +150,7 @@ export function createMcpServer(opts: CreateMcpOptions): McpServer {
     }),
   );
 
-  const ctx: HandlerContext = { cwd: opts.cwd };
+  const ctx: HandlerContext = { state: opts.state };
 
   for (const cfg of TOOL_CONFIGS) {
     const handler = HANDLERS[cfg.name];
@@ -177,3 +186,6 @@ export async function runStdioServer(opts: CreateMcpOptions): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
+
+/** Re-export for convenience so the entry point doesn't need a separate import. */
+export { ProjectState };

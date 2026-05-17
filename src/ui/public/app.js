@@ -5,6 +5,7 @@ const localeSelect = document.getElementById("locale-select");
 const refreshBtn = document.getElementById("refresh");
 const renderAllBtn = document.getElementById("render-all");
 const statusEl = document.getElementById("status");
+const projectRootEl = document.getElementById("project-root");
 
 let manifest = null;
 let currentLocale = null;
@@ -13,6 +14,13 @@ async function fetchManifest() {
   const res = await fetch("/api/manifest");
   if (!res.ok) throw new Error(`manifest fetch ${res.status}`);
   return res.json();
+}
+
+async function fetchProjectRoot() {
+  const res = await fetch("/api/project-root");
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.root;
 }
 
 function setStatus(text, kind = "info") {
@@ -125,7 +133,9 @@ function syncLocaleOptions() {
 
 async function refresh() {
   try {
-    manifest = await fetchManifest();
+    const [m, root] = await Promise.all([fetchManifest(), fetchProjectRoot()]);
+    manifest = m;
+    if (root && projectRootEl) projectRootEl.textContent = root;
     syncLocaleOptions();
     render();
     setStatus(null);

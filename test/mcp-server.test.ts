@@ -5,10 +5,10 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createMcpServer } from "../src/mcp/server.js";
-import { makeTempDir, rmDir } from "./helpers.js";
+import { makeTempDir, rmDir, makeState } from "./helpers.js";
 
 async function pair(cwd: string): Promise<{ client: Client; server: McpServer }> {
-  const server = createMcpServer({ cwd });
+  const server = createMcpServer({ state: makeState(cwd) });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test", version: "0" });
   await Promise.all([
@@ -29,7 +29,7 @@ describe("MCP server", () => {
     await rmDir(root);
   });
 
-  it("lists all 11 tools", async () => {
+  it("lists all 12 tools", async () => {
     const { client } = await pair(root);
     const res = await client.listTools();
     const names = res.tools.map((t) => t.name).sort();
@@ -42,6 +42,7 @@ describe("MCP server", () => {
         "list_screenshot_canvases",
         "list_source_assets",
         "render_all",
+        "set_active_project",
         "set_locales",
         "set_project_name",
         "set_stylesheet",

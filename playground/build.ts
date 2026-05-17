@@ -16,9 +16,10 @@ import {
   type HandlerContext,
 } from "../src/mcp/handlers.js";
 import { closeBrowser } from "../src/render/browser.js";
+import { ProjectState } from "../src/project/state.js";
 
 const ROOT = path.resolve("playground");
-const ctx: HandlerContext = { cwd: ROOT };
+const ctx: HandlerContext = { state: new ProjectState(ROOT) };
 
 const STYLESHEET = String.raw`
 :root {

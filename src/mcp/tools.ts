@@ -11,7 +11,15 @@ export const InitProjectInput = z.object({
     .string()
     .optional()
     .describe(
-      "Absolute path to the project directory. Defaults to the server's working directory.",
+      "Absolute or relative path for the new project. Relative paths resolve against the currently active root. Defaults to the active root itself.",
+    ),
+});
+
+export const SetActiveProjectInput = z.object({
+  root: z
+    .string()
+    .describe(
+      "Absolute or relative path to an already-initialized project. Relative paths resolve against the currently active root.",
     ),
 });
 

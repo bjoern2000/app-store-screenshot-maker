@@ -36,9 +36,26 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .brand {
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.project-root {
+  font-size: 11px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl; /* keep the leaf visible when the path is truncated */
+  max-width: 540px;
 }
 
 .controls {
