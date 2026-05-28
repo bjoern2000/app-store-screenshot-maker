@@ -4,6 +4,9 @@ dist
 .DS_Store
 test/.tmp
 
+# Local Claude Code guidance, kept out of the repo
+CLAUDE.md
+
 # Playground: keep the demo project + assets + driver, but not regenerable artifacts
 playground/output/
 playground/_preview-*.png
