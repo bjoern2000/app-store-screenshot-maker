@@ -155,10 +155,12 @@ Override per-project in `manifest.json#dimensions`.
 ## Output filenames
 
 ```
-output/<platform>/<device>/<locale>/<name>_<platform>_<device>_<locale>_<order>_<id>.png
+output/<platform>/<device>/<locale>/<order>_<id>_<name>_<platform>_<device>_<locale>.png
 ```
 
-Example: `output/app_store/iphone/en/keep_app_store_iphone_en_01_hero.png`
+Example: `output/app_store/iphone/en/01_hero_keep_app_store_iphone_en.png`
+
+The `<order>_<id>` prefix sorts naturally in Finder.
 
 `name` defaults to the slugified basename of the project dir; override with
 `set_project_name`. Filenames are intentionally redundant with the directory
@@ -195,3 +197,7 @@ npm run build        # tsc + copy UI public dir into dist/
 The test suite covers schema validation, project CRUD, the rendering pipeline
 (with actual PNG dim assertions), the UI HTTP API, the file watcher,
 WebSocket hot-reload, and one full end-to-end agent workflow.
+
+## License
+
+[MIT](LICENSE) © Björn Schefzyk

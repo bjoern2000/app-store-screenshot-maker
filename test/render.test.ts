@@ -103,11 +103,11 @@ describe("rendering pipeline", () => {
     expect(summary.errors).toEqual([]);
     expect(summary.wrote).toBe(4); // 1 ASN × 2 locales + 1 Play × 2 locales
 
-    // Filename pattern: {name}_{platform}_{device}_{locale}_{order}_{id}.png
+    // Filename pattern: {order}_{id}_{name}_{platform}_{device}_{locale}.png
     const enHeroDir = path.join(root, "output/app_store/iphone/en");
     const dePlayDir = path.join(root, "output/play_store/android_phone/de");
-    const enHero = (await fs.readdir(enHeroDir)).find((f) => f.endsWith("_00_hero.png"));
-    const dePlay = (await fs.readdir(dePlayDir)).find((f) => f.endsWith("_01_play1.png"));
+    const enHero = (await fs.readdir(enHeroDir)).find((f) => f.startsWith("00_hero_"));
+    const dePlay = (await fs.readdir(dePlayDir)).find((f) => f.startsWith("01_play1_"));
     expect(enHero).toBeDefined();
     expect(dePlay).toBeDefined();
 

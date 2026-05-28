@@ -44,7 +44,7 @@ const TOOL_CONFIGS: ToolConfig[] = [
   {
     name: "set_project_name",
     description:
-      "Set the project slug that becomes the prefix on every exported filename. Lowercase letters/digits/dashes/underscores only. Example: name='keep' produces 'keep_app_store_iphone_en_01_hero.png'. Call this once early in the workflow.",
+      "Set the project slug that is embedded in every exported filename. Lowercase letters/digits/dashes/underscores only. Example: name='keep' produces '01_hero_keep_app_store_iphone_en.png'. Call this once early in the workflow.",
     schema: SetProjectNameInput,
   },
   {
@@ -92,7 +92,7 @@ const TOOL_CONFIGS: ToolConfig[] = [
   {
     name: "render_all",
     description:
-      "Render every (canvas × locale) combination and write the final PNGs to output/<platform>/<device>/<locale>/<name>_<platform>_<device>_<locale>_<order>_<id>.png. Returns {written, errors, missing}: lists files produced, per-canvas render failures, and any locale/canvas pairs that had unresolved {{t.key}} tokens. Pass `locales` to restrict the export to a subset.",
+      "Render every (canvas × locale) combination and write the final PNGs to output/<platform>/<device>/<locale>/<order>_<id>_<name>_<platform>_<device>_<locale>.png. Returns {written, errors, missing}: lists files produced, per-canvas render failures, and any locale/canvas pairs that had unresolved {{t.key}} tokens. Pass `locales` to restrict the export to a subset.",
     schema: RenderAllInput,
   },
 ];

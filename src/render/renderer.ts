@@ -65,7 +65,7 @@ export function outputPathFor(
   const order = String(canvas.order).padStart(2, "0");
   // Self-describing filename so individual files stay identifiable when moved
   // out of the nested directory structure.
-  const filename = `${name}_${canvas.platform}_${canvas.device}_${locale}_${order}_${canvas.id}.png`;
+  const filename = `${order}_${canvas.id}_${name}_${canvas.platform}_${canvas.device}_${locale}.png`;
   return path.join(paths.outputDir, canvas.platform, canvas.device, locale, filename);
 }
 

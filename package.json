@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Local MCP server for designing App Store / Play Store screenshots with HTML/CSS",
   "type": "module",
+  "license": "MIT",
   "bin": {
     "app-store-screenshot-maker": "dist/index.js"
   },

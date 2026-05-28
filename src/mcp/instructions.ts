@@ -37,7 +37,7 @@ Conventions:
 - Reference user images as <img src='assets/...'>.
 - Devices render at exact store-spec dimensions (1320x2868 for app_store/iphone, \
 1080x1920 for play_store/android_phone). Author at those sizes.
-- Output: output/<platform>/<device>/<locale>/<name>_<platform>_<device>_<locale>_<order>_<id>.png
+- Output: output/<platform>/<device>/<locale>/<order>_<id>_<name>_<platform>_<device>_<locale>.png
 
 Before picking visual direction (colors, fonts, mockup treatment, layout), \
 ASK THE USER what they want — don't assume defaults.
